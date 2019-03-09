@@ -1,67 +1,87 @@
-# 0: unpack the data from .csv
-# 1: preprocess the data (ex. disceretize, polish (?))
-# 2: split the data (cross-validation)
-# 3: bayes classifier (on learning dataset)
-# 4: evaluate the classifier (on test dataset)
 import pandas
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 
 def unpack_data(filename):
-    data = pandas.read_csv(filename, header=None)
+    dataset = pandas.read_csv(filename, header=None)
 
     if filename == 'files/iris.csv':
-        data.columns = ["petalLength", "petalWidth", "sepalLlength", "sepalWidth", "class"]
+        dataset.columns = ["petalLength", "petalWidth", "sepalLength", "sepalWidth", "class"]
 
     if filename == 'files/glass.csv':
-        data.columns = ["id", "RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe", "class"]
+        dataset.columns = ["id", "RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe", "class"]
+        dataset = dataset.set_index('id')
 
     if filename == 'files/pima-diabetes.csv':
-        data.columns = [
-            "NumTimesPrg", "PlGlcConc", "BloodP",
-            "SkinThick", "TwoHourSerIns", "BMI",
-            "DiPedFunc", "Age", "class"]
+        dataset.columns = ["NumTimesPrg", "PlGlcConc", "BloodP", "SkinThick", "TwoHourSerIns", "BMI", "DiPedFunc", "Age",
+                           "class"]
 
     if filename == 'files/wine.csv':
-        data.columns = ["class", "Alcohol", "MalicAcid", "Ash", "AlcalinityOfAsh", "Magnesium", "TotalPhenols", "Flavanoids", "NonflavanoidPhenols", "Proanthocyanins", "ColorIntensivity", "Hue", "OD280/OD315", "Proline"]
+        dataset.columns = ["class", "Alcohol", "MalicAcid", "Ash", "AlcalinityOfAsh", "Magnesium", "TotalPhenols",
+                           "Flavanoids", "NonflavanoidPhenols", "Proanthocyanins", "ColorIntensivity", "Hue",
+                           "OD280/OD315", "Proline"]
 
-    print(data)
-    return data
-
-
-def preprocess_data(data):
-    return data
+    return dataset
 
 
-def split_data(data):
-
-    train = data
-    test = data
-
-    return train, test
+def preprocess_data(dataset):
+    return dataset
 
 
-def cross_validation(data):
-    for i in range(10):
-        train, test = split_data(data)
-        bayes(train)
-        evaluate(test)
+def split_data(dataset):
+    # TODO -> it's not cross-validation yet
+    train_set, test_set = train_test_split(dataset, test_size=0.2, random_state=42, stratify=dataset['class'])
+    train_set_labels = train_set["class"].copy()
+    train_set = train_set.drop("class", axis=1)
+
+    test_set_labels = test_set["class"].copy()
+    test_set = test_set.drop("class", axis=1)
+
+    return train_set, train_set_labels, test_set, test_set_labels
+
+
+def cross_validation(dataset):
+    for i in range(1):
+        train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
+        bayes(train_set)
+        evaluate(test_set)
     pass
 
 
-def bayes(data):
+def bayes(dataset):
     pass
 
 
-def evaluate(data):
+def evaluate(dataset):
     pass
 
 
-def main(filename):
-    data = unpack_data(filename)
-    data = preprocess_data(data)
-    cross_validation(data)
+def show_data(dataset):
+    print(dataset.head(), "\n")
+    print(dataset.corr())
+
+    # dataset.hist(bins=50, figsize=(20, 15))
+    # plt.show()
+
+
+def main(filename, show_mode):
+    # 0: unpack the data from .csv
+    # 1: preprocess the data (ex. disceretize, polish (?))
+    # 2: split the data (cross-validation)
+    # 3: bayes classifier (on learning dataset)
+    # 4: evaluate the classifier (on test dataset)
+    dataset = unpack_data(filename)
+
+    if show_mode:  # optional
+        show_data(dataset)
+
+    dataset = preprocess_data(dataset)
+    cross_validation(dataset)
 
 
 if __name__ == "__main__":
+    show_mode = True
     filename = 'files/iris.csv'
-    main(filename)
+
+    main(filename, show_mode)
