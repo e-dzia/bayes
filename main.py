@@ -1,6 +1,8 @@
 import pandas
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from sklearn import naive_bayes
+from bayes import Bayes
 
 
 def unpack_data(filename):
@@ -30,7 +32,7 @@ def preprocess_data(dataset):
 
 
 def split_data(dataset):
-    # TODO -> it's not cross-validation yet
+    # TODO -> it's not cross-validation yet, tmp: test_size=0.2
     train_set, test_set = train_test_split(dataset, test_size=0.2, random_state=42, stratify=dataset['class'])
     train_set_labels = train_set["class"].copy()
     train_set = train_set.drop("class", axis=1)
@@ -42,11 +44,22 @@ def split_data(dataset):
 
 
 def cross_validation(dataset):
-    for i in range(1):
-        train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
-        bayes(train_set)
-        evaluate(test_set)
-    pass
+    # for i in range(1):
+    #     train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
+    #     bayes(train_set)
+    #     evaluate(test_set)
+    train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
+
+    clf = naive_bayes.MultinomialNB()  # Bayes()
+    clf.fit(train_set, train_set_labels)
+    labels = clf.predict(test_set)
+
+    count = 0
+    for label_bayes, label_true in zip(labels, test_set_labels):
+        print(label_bayes, label_true)
+        if label_bayes == label_true:
+            count += 1
+    print(len(labels), count)
 
 
 def bayes(dataset):
