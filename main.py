@@ -1,7 +1,7 @@
 import pandas
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn import naive_bayes, model_selection, metrics
+from sklearn import naive_bayes, model_selection, metrics, preprocessing
 from bayes import Bayes
 
 
@@ -29,6 +29,10 @@ def unpack_data(filename):
 
 def preprocess_data(dataset):
     # TODO: digitize etc
+    # if filename == 'files/iris.csv':
+    #     type = {'Iris-setosa': 0, 'Iris-virginica': 1, 'Iris-versicolor': 2}
+    #     dataset['class'] = [type[item] for item in dataset['class']]
+
     return dataset
 
 
@@ -47,16 +51,25 @@ def split_data(dataset):
     return train_set, train_set_labels, test_set, test_set_labels
 
 
+def extract_labels(dataset):
+    # extract labels
+    dataset_labels = dataset["class"].copy()
+    dataset = dataset.drop("class", axis=1)
+
+    return dataset, dataset_labels
+
+
 def cross_validation(dataset, labels, model):
     seed = 7
     X = dataset
     Y = labels
 
-    kfold = model_selection.KFold(n_splits=10, random_state=seed)
+    # kfold = model_selection.KFold(n_splits=10, random_state=seed)
+    kfold = model_selection.StratifiedKFold(n_splits=10, random_state=seed)
     cv_results = model_selection.cross_val_score(model, X, Y, cv=kfold, scoring='f1_weighted')
     # TODO: accuracy? f1_weighted?
 
-    print("Cross-validation mean score: {} ({})".format(cv_results.mean(), cv_results.std()))
+    print("Cross-validation F1 score: {} ({})".format(cv_results.mean(), cv_results.std()))
 
 
 def evaluate(labels_true, labels_predicted):
@@ -65,7 +78,8 @@ def evaluate(labels_true, labels_predicted):
 
     count = 0
     for label_bayes, label_true in zip(labels_predicted, labels_true):
-        # print(label_bayes, label_true)
+        if show_mode:
+            print(label_true, label_bayes)
         if label_bayes == label_true:
             count += 1
     print("Correct labels: {}/{}".format(count, len(labels_predicted)))
@@ -81,34 +95,38 @@ def show_data(dataset):
 
 
 def main(filename, show_mode):
-    # 0: unpack the data from .csv
-    # 1: preprocess the data (ex. disceretize, polish (?))
-    # 2: split the data (cross-validation)
-    # 3: bayes classifier (on learning dataset)
-    # 4: evaluate the classifier (on test dataset)
+    # unpack the data from .csv
     dataset = unpack_data(filename)
 
     if show_mode:  # optional
         show_data(dataset)
 
+    # preprocess the data (ex. disceretize, polish (?))
     dataset = preprocess_data(dataset)
 
-    # TODO: my own Bayes algorithm model
-    model = naive_bayes.GaussianNB()
+    # my own Bayes algorithm model
+    model = Bayes()  # naive_bayes.GaussianNB()
 
+    # split the data
     # TODO: split the dataset before cross-validation?
-    train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
+    train_set, train_set_labels = extract_labels(dataset)
 
     cross_validation(train_set, train_set_labels, model)
 
+    train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
+
+    # bayes classifier (on learning dataset)
     model.fit(train_set, train_set_labels)
     labels = model.predict(test_set)
 
+    # evaluate the classifier (on test dataset)
     evaluate(test_set_labels, labels)
 
 
 if __name__ == "__main__":
-    show_mode = True
+    show_mode = False
     filename = 'files/iris.csv'
 
     main(filename, show_mode)
+
+# TODO: w glass jest SPORO podmianek (co z tym zrobić?)
