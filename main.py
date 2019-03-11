@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn import naive_bayes, model_selection, metrics, preprocessing
 from gaussianbayes import GaussianBayes
-from multinomialbayes import MultinomialBayes
+from multinomialbayes import MultinomialBayes, EQUAL_BINS, K_MEANS
 
 
 def unpack_data(filename):
@@ -29,7 +29,7 @@ def unpack_data(filename):
 
 
 def preprocess_data(dataset):
-    # TODO: digitize etc
+    # TODO?
     # if filename == 'files/iris.csv':
     #     type = {'Iris-setosa': 0, 'Iris-virginica': 1, 'Iris-versicolor': 2}
     #     dataset['class'] = [type[item] for item in dataset['class']]
@@ -106,7 +106,9 @@ def main(filename, show_mode):
     dataset = preprocess_data(dataset)
 
     # my own Bayes algorithm model
-    model = MultinomialBayes()  # naive_bayes.GaussianNB()
+    # model = GaussianBayes()
+    # model = MultinomialBayes(discretization_method=EQUAL_BINS)  # naive_bayes.GaussianNB()
+    model = MultinomialBayes(discretization_method=K_MEANS)
 
     # split the data
     # TODO: split the dataset before cross-validation?
@@ -130,5 +132,5 @@ if __name__ == "__main__":
 
     main(filename, show_mode)
 
-# TODO: w glass jest SPORO podmianek (co z tym zrobić?)
+# TODO: w glass jest SPORO podmianek (co z tym zrobić?) w Gaussian
 # TODO: czy metoda gaussian to osobna metoda dyskretyzacji?
