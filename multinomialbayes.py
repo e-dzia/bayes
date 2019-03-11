@@ -7,6 +7,7 @@ import numpy as np
 NO_DISCRETIZATION = 0
 EQUAL_BINS = 1
 K_MEANS = 2
+EQUAL_SIZE_BINS = 3
 
 
 class MultinomialBayes(Bayes):
@@ -27,6 +28,9 @@ class MultinomialBayes(Bayes):
 
         if self.discretization_method == K_MEANS:
             X = self._discretize_k_means(X)
+
+        if self.discretization_method == EQUAL_SIZE_BINS:
+            X = self._discretize_equal_size_bins(X)
 
         # count all elements of certain value in X (for each class and column and value)
         self._count_elements_by_class_column(X, y)
@@ -54,7 +58,7 @@ class MultinomialBayes(Bayes):
                     if value not in self.elements_numerosity[class_name][column] \
                             or self.elements_numerosity[class_name][column][value] == 0:
                         self.elements_numerosity[class_name][column][value] = 1
-                        print("###wygladzanie!!")
+                        # print("###wygladzanie!!")
 
                     prob_partial[class_name][column] = (self.elements_numerosity[class_name][column][value]) \
                                                        / (self.class_numerosity[class_name])
@@ -99,6 +103,18 @@ class MultinomialBayes(Bayes):
         #print(X)
         return X
 
+    def _discretize_equal_size_bins(self, X):
+        for column in X.columns:
+            column_values = X[column].values.copy()
+            column_values.sort()
+            splitted_values = np.array_split(column_values, self.num_of_bins)
+            bins = []
+            for array in splitted_values:
+                bins.append(min(array))
+            self.bins[column] = bins
+            X.loc[:, column] = np.digitize(X[column], self.bins[column], right=True)
+        return X
+
     def _count_elements_by_class_column(self, X, y):
         for column in X.columns:
             for value, i in zip(X[column], X[column].index.values):
@@ -128,7 +144,9 @@ class MultinomialBayes(Bayes):
         if self.discretization_method == NO_DISCRETIZATION:
             return value
 
-        if self.discretization_method == EQUAL_BINS or self.discretization_method == K_MEANS:
+        if self.discretization_method == EQUAL_BINS \
+                or self.discretization_method == K_MEANS \
+                or self.discretization_method == EQUAL_SIZE_BINS:
             for i, item in enumerate(self.bins[column]):
                 if value <= item:
                     return i

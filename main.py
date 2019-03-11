@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn import naive_bayes, model_selection, metrics, preprocessing
 from gaussianbayes import GaussianBayes
-from multinomialbayes import MultinomialBayes, EQUAL_BINS, K_MEANS
+from multinomialbayes import MultinomialBayes, EQUAL_BINS, K_MEANS, EQUAL_SIZE_BINS
 
 
 def unpack_data(filename):
@@ -95,7 +95,7 @@ def show_data(dataset):
     # plt.show()
 
 
-def main(filename, show_mode):
+def main(filename, show_mode, discretization_method=K_MEANS, num_of_bins=4):
     # unpack the data from .csv
     dataset = unpack_data(filename)
 
@@ -107,8 +107,8 @@ def main(filename, show_mode):
 
     # my own Bayes algorithm model
     # model = GaussianBayes()
-    # model = MultinomialBayes(discretization_method=EQUAL_BINS)  # naive_bayes.GaussianNB()
-    model = MultinomialBayes(discretization_method=K_MEANS)
+    # model = MultinomialBayes(discretization_method=EQUAL_BINS, num_of_bins=num_of_bins)  # naive_bayes.GaussianNB()
+    model = MultinomialBayes(discretization_method=discretization_method, num_of_bins=num_of_bins)
 
     # split the data
     # TODO: split the dataset before cross-validation?
@@ -129,8 +129,10 @@ def main(filename, show_mode):
 if __name__ == "__main__":
     show_mode = False
     filename = 'files/iris.csv'
+    discretization_method = EQUAL_SIZE_BINS
+    num_of_bins = 6
 
-    main(filename, show_mode)
+    main(filename, show_mode, discretization_method=discretization_method, num_of_bins=num_of_bins)
 
 # TODO: w glass jest SPORO podmianek (co z tym zrobić?) w Gaussian
 # TODO: czy metoda gaussian to osobna metoda dyskretyzacji?
