@@ -2,7 +2,8 @@ import pandas
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn import naive_bayes, model_selection, metrics, preprocessing
-from bayes import Bayes
+from gaussianbayes import GaussianBayes
+from multinomialbayes import MultinomialBayes
 
 
 def unpack_data(filename):
@@ -105,7 +106,7 @@ def main(filename, show_mode):
     dataset = preprocess_data(dataset)
 
     # my own Bayes algorithm model
-    model = Bayes()  # naive_bayes.GaussianNB()
+    model = MultinomialBayes()  # naive_bayes.GaussianNB()
 
     # split the data
     # TODO: split the dataset before cross-validation?
@@ -130,3 +131,4 @@ if __name__ == "__main__":
     main(filename, show_mode)
 
 # TODO: w glass jest SPORO podmianek (co z tym zrobić?)
+# TODO: czy metoda gaussian to osobna metoda dyskretyzacji?
