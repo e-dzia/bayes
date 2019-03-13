@@ -21,7 +21,6 @@ class GaussianBayes(Bayes):
 
     def predict(self, X):  # test
         # Perform classification on samples in X (test)
-        # TODO
         # print('predicting')
         y_pred = []
         prob_partial = {}
@@ -50,14 +49,12 @@ class GaussianBayes(Bayes):
 
     def get_params(self, deep=None):
         # Get parameters for this estimator.
-        # TODO
         # print('getting params')
         params = {}
-        return params
+        return params  # no params
 
     def set_params(self,**params):
         # Set the parameters of this estimator.
-        # TODO
         # print('setting params')
         return self
 

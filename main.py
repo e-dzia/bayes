@@ -1,3 +1,5 @@
+import csv
+
 import pandas
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -17,7 +19,8 @@ def unpack_data(filename):
         dataset = dataset.set_index('id')
 
     if filename == 'files/pima-diabetes.csv':
-        dataset.columns = ["NumTimesPrg", "PlGlcConc", "BloodP", "SkinThick", "TwoHourSerIns", "BMI", "DiPedFunc", "Age",
+        dataset.columns = ["NumTimesPrg", "PlGlcConc", "BloodP", "SkinThick", "TwoHourSerIns", "BMI", "DiPedFunc",
+                           "Age",
                            "class"]
 
     if filename == 'files/wine.csv':
@@ -60,17 +63,16 @@ def extract_labels(dataset):
     return dataset, dataset_labels
 
 
-def cross_validation(dataset, labels, model):
+def cross_validation(dataset, labels, model, splits):
     seed = 7
     X = dataset
     Y = labels
 
     # kfold = model_selection.KFold(n_splits=10, random_state=seed)
-    kfold = model_selection.StratifiedKFold(n_splits=10, random_state=seed)
+    kfold = model_selection.StratifiedKFold(n_splits=splits, random_state=seed)
     cv_results = model_selection.cross_val_score(model, X, Y, cv=kfold, scoring='f1_weighted')
     # TODO: accuracy? f1_weighted?
-
-    print("Cross-validation F1 score: {} ({})".format(cv_results.mean(), cv_results.std()))
+    return cv_results
 
 
 def evaluate(labels_true, labels_predicted):
@@ -95,7 +97,7 @@ def show_data(dataset):
     # plt.show()
 
 
-def main(filename, show_mode, discretization_method=K_MEANS, num_of_bins=4):
+def main_single(filename, show_mode, discretization_method=K_MEANS, num_of_bins=4, splits=10):
     # unpack the data from .csv
     dataset = unpack_data(filename)
 
@@ -114,25 +116,52 @@ def main(filename, show_mode, discretization_method=K_MEANS, num_of_bins=4):
     # TODO: split the dataset before cross-validation?
     train_set, train_set_labels = extract_labels(dataset)
 
-    cross_validation(train_set, train_set_labels, model)
+    cv_results = cross_validation(train_set, train_set_labels, model, splits)
 
-    train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
+    if show_mode:
+        print("Cross-validation F1 score: {} ({})".format(cv_results.mean(), cv_results.std()))
 
-    # bayes classifier (on learning dataset)
-    model.fit(train_set, train_set_labels)
-    labels = model.predict(test_set)
+    return cv_results
 
-    # evaluate the classifier (on test dataset)
-    evaluate(test_set_labels, labels)
+    # train_set, train_set_labels, test_set, test_set_labels = split_data(dataset)
+    #
+    # # bayes classifier (on learning dataset)
+    # model.fit(train_set, train_set_labels)
+    # labels = model.predict(test_set)
+    #
+    # # evaluate the classifier (on test dataset)
+    # evaluate(test_set_labels, labels)
+
+
+def main_tests(filenames, discretization_methods, bins_sizes, splits_sizes):
+    for filename in filenames:
+        f = open("res-" + filename, "w+")
+        writer = csv.writer(f)
+        for splits in splits_sizes:
+            for discretization_method in discretization_methods:
+                for num_of_bins in bins_sizes:
+                    results = main_single('files/' + filename, False, discretization_method=discretization_method,
+                                num_of_bins=num_of_bins, splits=splits)
+                    data = [filename, splits, discretization_method, num_of_bins, results.mean()]
+                    writer.writerow(data)
+                    print(data)
+        f.close()
 
 
 if __name__ == "__main__":
-    show_mode = False
-    filename = 'files/iris.csv'
-    discretization_method = EQUAL_SIZE_BINS
-    num_of_bins = 6
+    show_mode = True
+    filenames = ['iris.csv', 'pima-diabetes.csv', 'glass.csv', 'wine.csv']
+    discretization_methods = [EQUAL_BINS, K_MEANS, EQUAL_SIZE_BINS]
+    bins_sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+    splits_sizes = [2, 3, 4, 5, 7, 9, 10, 12, 15]
 
-    main(filename, show_mode, discretization_method=discretization_method, num_of_bins=num_of_bins)
+    filename = filenames[1]
+    discretization_method = K_MEANS
+    num_of_bins = 6
+    splits = 10
+
+    main_single('files/' + filename, show_mode, discretization_method=discretization_method, num_of_bins=num_of_bins, splits=splits)
+    # main_tests(filenames, discretization_methods, bins_sizes, splits_sizes)
 
 # TODO: w glass jest SPORO podmianek (co z tym zrobić?) w Gaussian
 # TODO: czy metoda gaussian to osobna metoda dyskretyzacji?

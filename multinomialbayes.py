@@ -36,7 +36,7 @@ class MultinomialBayes(Bayes):
         self._count_elements_by_class_column(X, y)
         self._count_class_probabilities(X, y)
 
-        print(self.elements_numerosity)
+        # print(self.elements_numerosity)
         return self
 
     def predict(self, X):  # test
@@ -81,7 +81,6 @@ class MultinomialBayes(Bayes):
 
     def set_params(self,**params):
         # Set the parameters of this estimator.
-        # TODO?
         # print('setting params')
         return self
 
@@ -96,7 +95,7 @@ class MultinomialBayes(Bayes):
 
     def _discretize_k_means(self, X):
         for column in X.columns:
-            self.bins[column], distortion = cluster.vq.kmeans(X[column], self.num_of_bins)
+            self.bins[column], distortion = cluster.vq.kmeans(X[column].astype(float), self.num_of_bins)
             self.bins[column].tolist()
             self.bins[column].sort()
             X.loc[:, column] = np.digitize(X[column], self.bins[column], right=True)
