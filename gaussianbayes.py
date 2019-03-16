@@ -37,7 +37,7 @@ class GaussianBayes(Bayes):
                                                        * np.e ** ((-(sample[column] - self.means[class_name][column]) ** 2) /
                                                                   (2 * (self.variances[class_name][column])))
                     if prob_partial[class_name][column] == 0:
-                        print("################podmianka!")
+                        print("################")
                         prob_partial[class_name][column] = 0.01
                     prob[class_name] *= prob_partial[class_name][column]
 

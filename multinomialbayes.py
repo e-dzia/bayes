@@ -2,12 +2,8 @@ from scipy import cluster
 from bayes import Bayes
 import pandas as pd
 import numpy as np
-
-
-NO_DISCRETIZATION = 0
-EQUAL_BINS = 1
-K_MEANS = 2
-EQUAL_SIZE_BINS = 3
+from discretization import discretize_equal_width, discretize_k_means, discretize_equal_frequency, \
+    NO_DISCRETIZATION, EQUAL_FREQUENCY, K_MEANS, EQUAL_WIDTH
 
 
 class MultinomialBayes(Bayes):
@@ -23,13 +19,13 @@ class MultinomialBayes(Bayes):
         # Fit the model according to the given training data.
 
         # discretize X
-        if self.discretization_method == EQUAL_BINS:
+        if self.discretization_method == EQUAL_WIDTH:
             X = self._discretize_equal_bins(X)
 
         if self.discretization_method == K_MEANS:
             X = self._discretize_k_means(X)
 
-        if self.discretization_method == EQUAL_SIZE_BINS:
+        if self.discretization_method == EQUAL_FREQUENCY:
             X = self._discretize_equal_size_bins(X)
 
         # count all elements of certain value in X (for each class and column and value)
@@ -143,9 +139,9 @@ class MultinomialBayes(Bayes):
         if self.discretization_method == NO_DISCRETIZATION:
             return value
 
-        if self.discretization_method == EQUAL_BINS \
+        if self.discretization_method == EQUAL_WIDTH \
                 or self.discretization_method == K_MEANS \
-                or self.discretization_method == EQUAL_SIZE_BINS:
+                or self.discretization_method == EQUAL_FREQUENCY:
             for i, item in enumerate(self.bins[column]):
                 if value <= item:
                     return i
