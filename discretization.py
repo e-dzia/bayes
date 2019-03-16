@@ -5,8 +5,8 @@ import numpy as np
 
 NO_DISCRETIZATION = 0
 EQUAL_WIDTH = 1
-K_MEANS = 2
-EQUAL_FREQUENCY = 3
+EQUAL_FREQUENCY = 2
+K_MEANS = 3
 
 
 def discretize_equal_width(X, num_of_bins):

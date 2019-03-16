@@ -7,14 +7,27 @@ from discretization import discretize_equal_width, discretize_k_means, discretiz
 
 
 class MultinomialBayes(Bayes):
-    def __init__(self):
-        self.values_numerosity = {}
+    def __init__(self, discretization_method=NO_DISCRETIZATION, num_of_bins=9):
+        self.elements_numerosity = {}
         self.class_numerosity = {}
         self.class_probabilities = {}
+        self.discretization_method = discretization_method
         self.bins = {}
+        self.num_of_bins = num_of_bins
 
     def fit(self, X, y, sample_weight=None):
         # Fit the model according to the given training data.
+
+        # discretize X
+        if self.discretization_method == EQUAL_WIDTH:
+            X = self._discretize_equal_bins(X)
+
+        if self.discretization_method == K_MEANS:
+            X = self._discretize_k_means(X)
+
+        if self.discretization_method == EQUAL_FREQUENCY:
+            X = self._discretize_equal_size_bins(X)
+
         # count all elements of certain value in X (for each class and column and value)
         self._count_elements_by_class_column(X, y)
         self._count_class_probabilities(X, y)
@@ -33,16 +46,17 @@ class MultinomialBayes(Bayes):
                 prob_partial[class_name] = {}
                 prob[class_name] = self.class_probabilities[class_name]
 
-                for column in self.values_numerosity[class_name]:
+                for column in self.elements_numerosity[class_name]:
                     sample = X.loc[i, [column]]
                     value = sample[column]
+                    value = self._get_bin(value, column)
 
                     # smoothing by just adding 1 TODO?
-                    if value not in self.values_numerosity[class_name][column] \
-                            or self.values_numerosity[class_name][column][value] == 0:
-                        self.values_numerosity[class_name][column][value] = 0.001
+                    if value not in self.elements_numerosity[class_name][column] \
+                            or self.elements_numerosity[class_name][column][value] == 0:
+                        self.elements_numerosity[class_name][column][value] = 0.001
 
-                    prob_partial[class_name][column] = (self.values_numerosity[class_name][column][value]) \
+                    prob_partial[class_name][column] = (self.elements_numerosity[class_name][column][value]) \
                                                       / (self.class_numerosity[class_name])
                     prob[class_name] *= prob_partial[class_name][column]
 
@@ -55,7 +69,7 @@ class MultinomialBayes(Bayes):
     def get_params(self, deep=None):
         # Get parameters for this estimator.
         # print('getting params')
-        params = {}
+        params = {'discretization_method': self.discretization_method, 'num_of_bins': self.num_of_bins}
         return params
 
     def set_params(self, **params):
@@ -66,16 +80,16 @@ class MultinomialBayes(Bayes):
     def _count_elements_by_class_column(self, X, y):
         for column in X.columns:
             for value, i in zip(X[column], X[column].index.values):
-                if y[i] not in self.values_numerosity:
-                    self.values_numerosity[y[i]] = {}
+                if y[i] not in self.elements_numerosity:
+                    self.elements_numerosity[y[i]] = {}
 
-                if column not in self.values_numerosity[y[i]]:
-                    self.values_numerosity[y[i]][column] = {}
+                if column not in self.elements_numerosity[y[i]]:
+                    self.elements_numerosity[y[i]][column] = {}
 
-                if value not in self.values_numerosity[y[i]][column]:
-                    self.values_numerosity[y[i]][column][value] = 0
+                if value not in self.elements_numerosity[y[i]][column]:
+                    self.elements_numerosity[y[i]][column][value] = 0
 
-                self.values_numerosity[y[i]][column][value] += 1
+                self.elements_numerosity[y[i]][column][value] += 1
 
     def _count_class_probabilities(self, X, y):
         for value, i in zip(X[X.columns[0]], X[X.columns[0]].index.values):
@@ -88,3 +102,13 @@ class MultinomialBayes(Bayes):
             if class_name in self.class_numerosity:
                 self.class_probabilities[class_name] = self.class_numerosity[class_name] / len(y)
 
+    def _get_bin(self, value, column):
+        if self.discretization_method == NO_DISCRETIZATION:
+            return value
+
+        if self.discretization_method == EQUAL_WIDTH \
+                or self.discretization_method == K_MEANS \
+                or self.discretization_method == EQUAL_FREQUENCY:
+            for i, item in enumerate(self.bins[column]):
+                if value <= item:
+                    return i

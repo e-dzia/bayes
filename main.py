@@ -117,7 +117,7 @@ def main_single(filename, show_mode, discretization_method=K_MEANS, num_of_bins=
     if discretization_method == NO_DISCRETIZATION:
         model = GaussianBayes()
     else:
-        model = MultinomialBayes(discretization_method=discretization_method, num_of_bins=num_of_bins)
+        model = MultinomialBayes()
 
     # split the data
     dataset, dataset_labels = extract_labels(dataset)
@@ -138,22 +138,25 @@ def main_single(filename, show_mode, discretization_method=K_MEANS, num_of_bins=
 
 def main_tests(filenames, discretization_methods, bins_sizes, splits_sizes):
     for filename in filenames:
-        f = open("results/res-" + filename, "w+")
+        f = open("results/res-" + filename, "w", newline='')
         writer = csv.writer(f)
+        writer.writerow(['file', 'splits', 'disc', 'bins', 'acc', 'pr', 'rec', 'f1'])
         for splits in splits_sizes:
             for discretization_method in discretization_methods:
                 if discretization_method == NO_DISCRETIZATION:
-                    results = main_single('files/' + filename, False, discretization_method=discretization_method,
-                                          splits=splits)
-                    data = [filename, splits, discretization_method, 0, results]
+                    acc, pr, rec, f1 = main_single('files/' + filename, False,
+                                                   discretization_method=discretization_method,
+                                                   num_of_bins=0, splits=splits)
+                    data = [filename, splits, discretization_method, 0, acc, pr, rec, f1]
                     writer.writerow(data)
                     print(data)
                 else:
                     for num_of_bins in bins_sizes:
-                        results = main_single('files/' + filename, False, discretization_method=discretization_method,
-                                    num_of_bins=num_of_bins, splits=splits)
-                        data = [filename, splits, discretization_method, num_of_bins, results]
-                        writer.write(data)
+                        acc, pr, rec, f1 = main_single('files/' + filename, False,
+                                                       discretization_method=discretization_method,
+                                                       num_of_bins=num_of_bins, splits=splits)
+                        data = [filename, splits, discretization_method, num_of_bins, acc, pr, rec, f1]
+                        writer.writerow(data)
                         print(data)
         f.close()
 
@@ -163,7 +166,7 @@ if __name__ == "__main__":
     show_mode = True
     filenames = ['iris.csv', 'pima-diabetes.csv', 'glass.csv', 'wine.csv']
     discretization_methods = [NO_DISCRETIZATION, EQUAL_WIDTH, EQUAL_FREQUENCY, K_MEANS]
-    bins_sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+    bins_sizes = [2, 4, 7, 10, 15]
     splits_sizes = [2, 3, 5, 10]
     stratified = [True, False]
 
