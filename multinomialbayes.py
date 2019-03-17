@@ -37,7 +37,7 @@ class MultinomialBayes(Bayes):
                     sample = X.loc[i, [column]]
                     value = sample[column]
 
-                    # smoothing by just adding 1 TODO?
+                    # smoothing by just adding 1
                     if value not in self.values_numerosity[class_name][column] \
                             or self.values_numerosity[class_name][column][value] == 0:
                         self.values_numerosity[class_name][column][value] = 0.001

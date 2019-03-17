@@ -1,3 +1,4 @@
+import sys
 from bayes import Bayes
 import numpy as np
 
@@ -36,15 +37,13 @@ class GaussianBayes(Bayes):
                     prob_partial[class_name][column] = 1 / np.sqrt(2 * np.pi * (self.variances[class_name][column])) \
                                                        * np.e ** ((-(sample[column] - self.means[class_name][column]) ** 2) /
                                                                   (2 * (self.variances[class_name][column])))
-                    if prob_partial[class_name][column] == 0:
-                        print("################")
-                        prob_partial[class_name][column] = 0.01
+                    if prob_partial[class_name][column] == 0:  # a case when the values are smaller than min float value
+                        prob_partial[class_name][column] = 0.00000000000000000001
                     prob[class_name] *= prob_partial[class_name][column]
 
             maximum = max(prob.values())
             pred_class = [name for name, value in prob.items() if value == maximum]   # TODO
             y_pred.append(pred_class[0])
-
         return y_pred  # class labels for samples in X
 
     def get_params(self, deep=None):

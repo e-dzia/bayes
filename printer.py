@@ -1,10 +1,19 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
+from matplotlib.ticker import StrMethodFormatter
 
 
 def show_data(dataset_name, dataset):
     fig, ax = plt.subplots()
-    dataset.hist(bins=50, figsize=(10, 15), ax=ax)
+    params = {'axes.titlesize': '10',
+              'xtick.labelsize': '5',
+              'ytick.labelsize': '5'}
+    matplotlib.rcParams.update(params)
+    dataset.hist(bins=25, grid=False, figsize=(50, 30),
+                 zorder=2, rwidth=0.9, ax=ax)
+    plt.tight_layout()
     fig.savefig('visualization/' + dataset_name + '-hist.pdf')
     plt.clf()
 
@@ -26,7 +35,9 @@ def show_data(dataset_name, dataset):
 
 
 def show_data_example(show_mode, filename, dataset):
-    if show_mode:  # do this only once for every dataset - no necessity to do it more
+    if show_mode:  # do this only once for every dataset - no necessity to do it more times
          res = filename.split('/')
          dataset_name = res[1].split('.')[0]
          show_data(dataset_name, dataset)
+
+
