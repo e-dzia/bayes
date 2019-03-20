@@ -114,11 +114,6 @@ def main_single(filename, show_mode, discretization_method=K_MEANS, num_of_bins=
     # unpack the data from .csv
     dataset = unpack_data(filename)
 
-    if show_mode:  # do this only once for every dataset - no necessity to do it more times
-         res = filename.split('/')
-         dataset_name = res[1].split('.')[0]
-         show_data(dataset_name, dataset)
-
     # choose the model
     if discretization_method == NO_DISCRETIZATION:
         model = GaussianBayes()

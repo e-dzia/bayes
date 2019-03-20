@@ -37,8 +37,8 @@ class GaussianBayes(Bayes):
                     prob_partial[class_name][column] = 1 / np.sqrt(2 * np.pi * (self.variances[class_name][column])) \
                                                        * np.e ** ((-(sample[column] - self.means[class_name][column]) ** 2) /
                                                                   (2 * (self.variances[class_name][column])))
-                    if prob_partial[class_name][column] == 0:  # a case when the values are smaller than min float value
-                        prob_partial[class_name][column] = 0.00000000000000000001
+                    # if prob_partial[class_name][column] == 0:  # a case when the values are smaller than min float value
+                    #     prob_partial[class_name][column] = 0.00000000000000000001
                     prob[class_name] *= prob_partial[class_name][column]
 
             maximum = max(prob.values())
@@ -93,4 +93,3 @@ class GaussianBayes(Bayes):
         for class_name in set(y):
             if class_name in self.class_numerosity:
                 self.class_probabilities[class_name] = self.class_numerosity[class_name]/len(y)
-
